@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ExpenseForm from "@/components/ExpenseForm";
 import ExpenseTable from "@/components/ExpenseTable";
+import Toast from "@/components/Toast";
 import { listExpenses } from "@/lib/api";
-import { clearToken, getToken } from "@/lib/auth";
+import { clearToken, getToken, getUserDisplayName } from "@/lib/auth";
+import { consumeFlashMessage, setFlashMessage } from "@/lib/flash";
 import { Expense } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -18,6 +20,8 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [category, setCategory] = useState("");
   const [sortDateDesc, setSortDateDesc] = useState(true);
+  const [displayName, setDisplayName] = useState("User");
+  const [toast, setToast] = useState("");
 
   useEffect(() => {
     const t = getToken();
@@ -26,6 +30,8 @@ export default function DashboardPage() {
       return;
     }
     setToken(t);
+    setDisplayName(getUserDisplayName());
+    setToast(consumeFlashMessage());
   }, [router]);
 
   const refresh = useCallback(async () => {
@@ -60,18 +66,28 @@ export default function DashboardPage() {
   }, [refresh]);
 
   function logout() {
+    setFlashMessage("Logout successful.");
     clearToken();
     router.replace("/login");
   }
 
   return (
     <main>
-      <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-        <h1>Expense Dashboard</h1>
-        <button onClick={logout}>Logout</button>
+      <div className="navbar card">
+        <div>
+          <p className="muted" style={{ margin: 0 }}>Welcome back</p>
+          <h1 style={{ margin: 0 }}>Hi, {displayName}</h1>
+        </div>
+        <button className="btn-secondary" onClick={logout}>Logout</button>
       </div>
 
-      {token ? <ExpenseForm token={token} onCreated={refresh} /> : null}
+      {token ? (
+        <ExpenseForm
+          token={token}
+          onCreated={refresh}
+          onCreatedSuccess={() => setToast("Expense added successfully.")}
+        />
+      ) : null}
 
       <div className="card" style={{ marginTop: 16 }}>
         <div className="row" style={{ alignItems: "flex-end", justifyContent: "space-between" }}>
@@ -102,6 +118,8 @@ export default function DashboardPage() {
         {loading ? <p>Loading...</p> : <ExpenseTable expenses={expenses} />}
         {error ? <p className="error">{error}</p> : null}
       </div>
+
+      <Toast message={toast} onClose={() => setToast("")} />
     </main>
   );
 }

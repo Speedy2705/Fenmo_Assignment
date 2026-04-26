@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
-import { saveToken } from "@/lib/auth";
+import Toast from "@/components/Toast";
+import { consumeFlashMessage, setFlashMessage } from "@/lib/flash";
+import { inferDisplayNameFromEmail, saveToken, saveUserDisplayName } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +14,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    setToast(consumeFlashMessage());
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -20,6 +27,8 @@ export default function LoginPage() {
     try {
       const result = await login(email, password);
       saveToken(result.access_token);
+      saveUserDisplayName(inferDisplayNameFromEmail(email));
+      setFlashMessage("Login successful.");
       router.replace("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -55,6 +64,7 @@ export default function LoginPage() {
           No account? <Link href="/signup">Create one</Link>
         </p>
       </div>
+      <Toast message={toast} onClose={() => setToast("")} />
     </main>
   );
 }
