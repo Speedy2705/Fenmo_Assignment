@@ -2,6 +2,7 @@ from decimal import Decimal
 import hashlib
 import json
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..deps import get_current_user
@@ -80,7 +81,7 @@ def list_expenses(
     query = db.query(Expense).filter(Expense.user_id == current_user.id)
 
     if category:
-        query = query.filter(Expense.category == category)
+        query = query.filter(func.lower(Expense.category) == category.strip().lower())
 
     if sort == "date_desc":
         query = query.order_by(Expense.date.desc(), Expense.created_at.desc())

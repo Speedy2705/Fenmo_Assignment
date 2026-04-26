@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { createExpense } from "@/lib/api";
+import CategorySelector, { CategorySelection } from "@/components/CategorySelector";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { ExpenseCreatePayload } from "@/lib/types";
 
@@ -24,7 +25,13 @@ function randomId() {
 
 export default function ExpenseForm({ token, onCreated, onCreatedSuccess }: Props) {
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
+  const [categorySelection, setCategorySelection] = useState<CategorySelection>({
+    selectedCategory: "",
+    customCategory: "",
+    value: "",
+  });
+  const [categoryError, setCategoryError] = useState("");
+  const [resetCategorySignal, setResetCategorySignal] = useState(0);
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [busy, setBusy] = useState(false);
@@ -56,7 +63,8 @@ export default function ExpenseForm({ token, onCreated, onCreatedSuccess }: Prop
       localStorage.removeItem(PENDING_KEY);
       setPending(null);
       setAmount("");
-      setCategory("");
+      setCategoryError("");
+      setResetCategorySignal((current) => current + 1);
       setDescription("");
       setDate("");
       onCreated();
@@ -96,18 +104,33 @@ export default function ExpenseForm({ token, onCreated, onCreatedSuccess }: Prop
       return null;
     }
 
+    if (!categorySelection.selectedCategory) {
+      setError("");
+      setCategoryError("Please select a category");
+      return null;
+    }
+
+    if (categorySelection.selectedCategory === "Other" && !categorySelection.customCategory.trim()) {
+      setError("");
+      setCategoryError("Custom category is required");
+      return null;
+    }
+
+    const normalizedCategory = categorySelection.value.trim();
+
     const payload: ExpenseCreatePayload = {
       amount: value.toFixed(2),
-      category: category.trim(),
+      category: normalizedCategory,
       description: description.trim(),
       date,
     };
 
-    if (!payload.category || !payload.description) {
-      setError("Category and description are required");
+    if (!payload.description) {
+      setError("Description is required");
       return null;
     }
 
+    setCategoryError("");
     setError("");
     return payload;
   }
@@ -140,13 +163,17 @@ export default function ExpenseForm({ token, onCreated, onCreatedSuccess }: Prop
               />
             </div>
           </div>
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <label>Category</label>
-            <input
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="Food, Travel..."
-              required
+          <div style={{ minWidth: 180 }}>
+            <CategorySelector
+              resetSignal={resetCategorySignal}
+              error={categoryError}
+              disabled={busy}
+              onChange={(selection) => {
+                setCategorySelection(selection);
+                if (categoryError) {
+                  setCategoryError("");
+                }
+              }}
             />
           </div>
           <div style={{ flex: 1, minWidth: 180 }}>
