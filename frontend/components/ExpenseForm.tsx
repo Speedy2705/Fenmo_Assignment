@@ -121,9 +121,9 @@ export default function ExpenseForm({ token, onCreated, onCreatedSuccess }: Prop
 
   return (
     <div className="card">
-      <h2>Add Expense</h2>
+      <h2 className="form-title">Add Expense</h2>
       <form onSubmit={onSubmit}>
-        <div className="row">
+        <div className="form-grid">
           <div style={{ flex: 1, minWidth: 180 }}>
             <label>Amount</label>
             <div className="money-input-wrap">
@@ -154,7 +154,7 @@ export default function ExpenseForm({ token, onCreated, onCreatedSuccess }: Prop
             <input value={date} onChange={(e) => setDate(e.target.value)} type="date" required />
           </div>
         </div>
-        <div style={{ marginTop: 10 }}>
+        <div style={{ marginTop: 12 }}>
           <label>Description</label>
           <textarea
             rows={3}
@@ -170,6 +170,7 @@ export default function ExpenseForm({ token, onCreated, onCreatedSuccess }: Prop
           </button>
           {pending && (
             <button
+              className="btn-secondary"
               type="button"
               disabled={busy}
               onClick={() => submit(pending.payload, pending.idempotencyKey)}

@@ -10,25 +10,27 @@ export default function ExpenseTable({ expenses }: Props) {
   }
 
   return (
-    <table className="table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Category</th>
-          <th>Description</th>
-          <th>Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        {expenses.map((expense) => (
-          <tr key={expense.id}>
-            <td>{expense.date}</td>
-            <td>{expense.category}</td>
-            <td>{expense.description}</td>
-            <td>₹{Number(expense.amount).toFixed(2)}</td>
+    <div className="table-wrap">
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Amount</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {expenses.map((expense) => (
+            <tr key={expense.id}>
+              <td>{expense.date}</td>
+              <td><span className="category-badge">{expense.category}</span></td>
+              <td>{expense.description}</td>
+              <td className="amount-cell">₹{Number(expense.amount).toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

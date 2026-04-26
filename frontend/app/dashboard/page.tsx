@@ -73,10 +73,10 @@ export default function DashboardPage() {
 
   return (
     <main>
-      <div className="navbar card">
+      <div className="topbar">
         <div>
-          <p className="muted" style={{ margin: 0 }}>Welcome back</p>
-          <h1 style={{ margin: 0 }}>Hi, {displayName}</h1>
+          <p className="brand-kicker">Spendwise</p>
+          <h1 className="topbar-title">Welcome, {displayName}</h1>
         </div>
         <button className="btn-secondary" onClick={logout}>Logout</button>
       </div>
@@ -90,8 +90,8 @@ export default function DashboardPage() {
       ) : null}
 
       <div className="card" style={{ marginTop: 16 }}>
-        <div className="row" style={{ alignItems: "flex-end", justifyContent: "space-between" }}>
-          <div style={{ minWidth: 220 }}>
+        <div className="filter-bar">
+          <div className="filter-field">
             <label>Filter by category</label>
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">All categories</option>
@@ -102,9 +102,8 @@ export default function DashboardPage() {
               ))}
             </select>
           </div>
-          <label>
+          <label className="checkbox-line">
             <input
-              style={{ width: "auto", marginRight: 6 }}
               type="checkbox"
               checked={sortDateDesc}
               onChange={(e) => setSortDateDesc(e.target.checked)}
@@ -113,10 +112,23 @@ export default function DashboardPage() {
           </label>
         </div>
 
-        <p style={{ marginTop: 12, fontWeight: 700 }}>Total: ₹{Number(total).toFixed(2)}</p>
+        <div className="total-strip">
+          <span className="total-label">Total Spend</span>
+          <strong className="total-value">₹{Number(total).toFixed(2)}</strong>
+        </div>
 
-        {loading ? <p>Loading...</p> : <ExpenseTable expenses={expenses} />}
-        {error ? <p className="error">{error}</p> : null}
+        {loading ? (
+          <div className="skeleton-list" aria-hidden="true">
+            <div className="skeleton-row" />
+            <div className="skeleton-row" />
+            <div className="skeleton-row" />
+            <div className="skeleton-row" />
+          </div>
+        ) : (
+          <ExpenseTable expenses={expenses} />
+        )}
+
+        {error ? <div className="error-banner" role="alert">{error}</div> : null}
       </div>
 
       <Toast message={toast} onClose={() => setToast("")} />

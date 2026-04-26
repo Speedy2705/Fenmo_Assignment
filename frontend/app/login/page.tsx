@@ -13,8 +13,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
   const [toast, setToast] = useState("");
+  const [toastVariant, setToastVariant] = useState<"success" | "error">("success");
 
   useEffect(() => {
     setToast(consumeFlashMessage());
@@ -23,7 +23,6 @@ export default function LoginPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
-    setError("");
     try {
       const result = await login(email, password);
       saveToken(result.access_token);
@@ -31,7 +30,8 @@ export default function LoginPage() {
       setFlashMessage("Login successful.");
       router.replace("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setToastVariant("error");
+      setToast(err instanceof Error ? err.message : "Invalid email or password");
     } finally {
       setBusy(false);
     }
@@ -58,13 +58,12 @@ export default function LoginPage() {
           <button style={{ marginTop: 12 }} disabled={busy} type="submit">
             {busy ? "Signing in..." : "Login"}
           </button>
-          {error ? <p className="error">{error}</p> : null}
         </form>
         <p className="muted" style={{ marginTop: 12 }}>
           No account? <Link href="/signup">Create one</Link>
         </p>
       </div>
-      <Toast message={toast} onClose={() => setToast("")} />
+      <Toast message={toast} variant={toastVariant} onClose={() => setToast("")} />
     </main>
   );
 }
